@@ -1,0 +1,104 @@
+-- 用戶表
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  line_id VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  address VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 菜單分類表
+CREATE TABLE IF NOT EXISTS menu_categories (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  category_name VARCHAR(100) NOT NULL UNIQUE,
+  display_order INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 菜單商品表
+CREATE TABLE IF NOT EXISTS menu_items (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  category_id BIGINT NOT NULL,
+  item_name VARCHAR(100) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  description VARCHAR(255),
+  has_size BOOLEAN DEFAULT FALSE,
+  size_small_price DECIMAL(10, 2),
+  size_large_price DECIMAL(10, 2),
+  is_active BOOLEAN DEFAULT TRUE,
+  display_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES menu_categories(id)
+);
+
+-- 套餐表
+CREATE TABLE IF NOT EXISTS combo_meals (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  category_id BIGINT NOT NULL,
+  combo_name VARCHAR(100) NOT NULL,
+  base_price DECIMAL(10, 2) NOT NULL,
+  description TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  display_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES menu_categories(id)
+);
+
+-- 套餐包含的商品表 (用於套餐組成)
+CREATE TABLE IF NOT EXISTS combo_items (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  combo_id BIGINT NOT NULL,
+  item_name VARCHAR(100) NOT NULL,
+  quantity INT DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (combo_id) REFERENCES combo_meals(id) ON DELETE CASCADE
+);
+
+-- 訂單表
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  order_number VARCHAR(50) UNIQUE NOT NULL,
+  user_id BIGINT NOT NULL,
+  customer_name VARCHAR(100) NOT NULL,
+  customer_phone VARCHAR(20) NOT NULL,
+  delivery_type ENUM('PICKUP', 'DELIVERY') NOT NULL,
+  address VARCHAR(255),
+  delivery_time VARCHAR(50),
+  notes TEXT,
+  total_price DECIMAL(10, 2) NOT NULL,
+  status ENUM('PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  INDEX idx_order_number (order_number),
+  INDEX idx_status (status),
+  INDEX idx_created_at (created_at)
+);
+
+-- 訂單項目表
+CREATE TABLE IF NOT EXISTS order_items (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  order_id BIGINT NOT NULL,
+  item_type ENUM('REGULAR', 'COMBO') NOT NULL,
+  item_id BIGINT NOT NULL,
+  item_name VARCHAR(100) NOT NULL,
+  quantity INT NOT NULL,
+  size ENUM('SMALL', 'LARGE'),
+  flavor_notes VARCHAR(255),
+  unit_price DECIMAL(10, 2) NOT NULL,
+  total_price DECIMAL(10, 2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
+
+-- 購物車表
+CREATE TABLE IF NOT EXISTS shopping_carts (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  line_id VARCHAR(255) UNIQUE NOT NULL,
+  cart_data JSON NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

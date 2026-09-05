@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: line-food-ordering
+  datasource:
+    url: jdbc:mysql://localhost:3306/line_food_ordering?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+
+line:
+  bot:
+    channel-secret: YOUR_CHANNEL_SECRET
+    channel-token: YOUR_CHANNEL_ACCESS_TOKEN
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    root: INFO
+    com.linecorp.bot: DEBUG
